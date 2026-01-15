@@ -207,7 +207,7 @@
 			c.reagents.trans_id_to(fuel_holder, /datum/reagent/fuel, min((fuel_holder.volume - fuel_holder.reagents.total_volume), c.amount_per_transfer_from_this))
 			return TRUE
 	. = ..()
-	
+
 
 /obj/mecha/proc/get_fuel_tank()
 	return fuel_holder

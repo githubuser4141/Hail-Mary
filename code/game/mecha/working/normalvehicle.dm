@@ -3,12 +3,14 @@
 	desc = "not supposed to be here.Delete please."
 	anchored = FALSE
 	pixel_x = -32
-	obj_integrity = 600
 	max_integrity = 600
 	max_buckled_mobs = 2 // this does nothing and max occupants allows more mobs to buckle but breaks movement
 	move_force = MOVE_FORCE_VERY_STRONG
 	move_resist = MOVE_FORCE_VERY_STRONG
 	pull_force = MOVE_FORCE_VERY_STRONG
+	exit_delay = 5
+	enter_delay = 5
+	force = 30 // Vehicles can no longer "punch" people like mechs.
 	var/crash_all = FALSE //CHAOS
 	var/car_traits = NONE //Bitflag for special behavior such as kidnapping
 	var/engine_sound_length = 20 //Set this to the length of the engine sound
@@ -17,26 +19,30 @@
 	. = ..()
 	if(A.density && has_buckled_mobs())
 		var/atom/throw_target = get_edge_target_turf(A, dir)
+		var/damage = force / current_speed
 		if(crash_all)
 			A.throw_at(throw_target, 4, 3)
 			visible_message("<span class='danger'>[src] crashes into [A]!</span>")
 			playsound(src, 'sound/effects/bang.ogg', 50, 1)
 		if(ishuman(A))
 			var/mob/living/carbon/human/H = A
-			H.DefaultCombatKnockdown(50)
-			H.adjustStaminaLoss(15)
-			H.apply_damage(rand(10,15), BRUTE)
+			H.DefaultCombatKnockdown(20)
+			H.adjustStaminaLoss(damage)
+			H.apply_damage(damage, BRUTE)
 			if(!crash_all)
 				H.throw_at(throw_target, 2, 3)
 				visible_message("<span class='danger'>[src] crashes into [H]!</span>")
 				playsound(src, 'sound/effects/bang.ogg', 50, 1)
 		if(isliving(A))
 			var/mob/living/W = A
-			W.apply_damage(10, BRUTE)
+			W.apply_damage(damage, BRUTE)
 			if(!crash_all)
 				W.throw_at(throw_target, 1, 2)
 				visible_message("<span class='danger'>[src] crashes into [W]!</span>")
 				playsound(src, 'sound/effects/bang.ogg', 50, 1)
+			if(W.mob_size < MOB_SIZE_SMALL)
+				W.death()
+				visible_message("<span class='danger'>[src] squshes [W] into paste!</span>")
 
 /obj/mecha/working/normalvehicle/vertibird
 	name = "\improper Cargo Vertibird"
@@ -67,9 +73,9 @@
 	movement_type = FLYING
 	stepsound = 'sound/f13machines/vertibird_loop.ogg'
 	turnsound = 'sound/f13machines/vertibird_loop.ogg'
-	
-	
-	
+
+
+
 
 /obj/structure/mecha_wreckage/vertibird
 	name = "\improper Vertibird Wreck"
@@ -78,8 +84,8 @@
 	icon_state = "vb-broken"
 	pixel_x = -138
 	pixel_y = -138
- 
-/obj/mecha/working/normalvehicle/vertibird/GrantActions(mob/living/user, human_occupant = 0) 
+
+/obj/mecha/working/normalvehicle/vertibird/GrantActions(mob/living/user, human_occupant = 0)
 	internals_action.Grant(user, src)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
@@ -113,7 +119,7 @@
 
 /obj/mecha/working/normalvehicle/vertibird/loaded/Initialize()
 	. = ..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new 
+	var/obj/item/mecha_parts/mecha_equipment/ME = new
 	ME = new /obj/item/mecha_parts/mecha_equipment/seat
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/seat
@@ -156,11 +162,11 @@
 	movement_type = FLYING
 	stepsound = 'sound/f13machines/vertibird_loop.ogg'
 	turnsound = 'sound/f13machines/vertibird_loop.ogg'
-	
-	
-	
 
-/obj/mecha/working/normalvehicle/vertibird/ncr/GrantActions(mob/living/user, human_occupant = 0) 
+
+
+
+/obj/mecha/working/normalvehicle/vertibird/ncr/GrantActions(mob/living/user, human_occupant = 0)
 	internals_action.Grant(user, src)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
@@ -192,7 +198,7 @@
 
 /obj/mecha/working/normalvehicle/vertibird/ncr/loaded/Initialize()
 	. = ..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new 
+	var/obj/item/mecha_parts/mecha_equipment/ME = new
 	ME = new /obj/item/mecha_parts/mecha_equipment/seat
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/seat
@@ -236,7 +242,7 @@
 	stepsound = 'sound/f13machines/vertibird_loop.ogg'
 	turnsound = 'sound/f13machines/vertibird_loop.ogg'
 
-/obj/mecha/working/normalvehicle/vertibird/enclave/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/vertibird/enclave/GrantActions(mob/living/user, human_occupant = 0)
 	internals_action.Grant(user, src)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
@@ -266,7 +272,7 @@
 
 /obj/mecha/working/normalvehicle/vertibird/enclave/loaded/Initialize()
 	. = ..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new 
+	var/obj/item/mecha_parts/mecha_equipment/ME = new
 	ME = new /obj/item/mecha_parts/mecha_equipment/seat
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/seat
@@ -310,7 +316,7 @@
 	stepsound = 'sound/f13machines/vertibird_loop.ogg'
 	turnsound = 'sound/f13machines/vertibird_loop.ogg'
 
-/obj/mecha/working/normalvehicle/vertibird/brotherhood/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/vertibird/brotherhood/GrantActions(mob/living/user, human_occupant = 0)
 	internals_action.Grant(user, src)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
@@ -340,7 +346,7 @@
 
 /obj/mecha/working/normalvehicle/vertibird/brotherhood/loaded/Initialize()
 	. = ..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new 
+	var/obj/item/mecha_parts/mecha_equipment/ME = new
 	ME = new /obj/item/mecha_parts/mecha_equipment/seat
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/seat
@@ -383,7 +389,7 @@
 	stepsound = 'sound/f13ambience/ambigen_15.ogg'
 	turnsound = 'sound/f13ambience/ambigen_15.ogg'
 
-/obj/mecha/working/normalvehicle/vertibird/balloon/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/vertibird/balloon/GrantActions(mob/living/user, human_occupant = 0)
 	internals_action.Grant(user, src)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
@@ -415,7 +421,7 @@
 
 /obj/mecha/working/normalvehicle/vertibird/balloon/loaded/Initialize()
 	. = ..()
-	var/obj/item/mecha_parts/mecha_equipment/ME = new 
+	var/obj/item/mecha_parts/mecha_equipment/ME = new
 	ME = new /obj/item/mecha_parts/mecha_equipment/seat
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/seat
@@ -424,6 +430,38 @@
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/trunk
 	ME.attach(src)
+
+/obj/mecha/working/normalvehicle/ncrtruck
+	name = "\improper NCR Truck"
+	desc = "A truck running on fuel. Nice eh? Still a wreck, though."
+	icon = 'icons/mecha/ncrtruck.dmi'
+	icon_state = "ncrtruck"
+	pixel_shift_profile = VEHICLE_PIXEL_SHIFT_TRUCK
+	vehicle_driving_profile = HANDLING_PROFILE_CAR
+	max_integrity = INTEGRITY_TRUCK
+	armor = ARMOR_VALUE_HEAVY
+	max_equip = 8
+	equipment_profile = EQUIPMENT_VEHICLE_STRIPPED
+//	actions_profile = ACTIONS_VEHICLE_TRUCK
+
+/obj/mecha/working/normalvehicle/ncrtruck/loaded
+	equipment_profile = EQUIPMENT_TRUCK_CARGO
+
+/obj/mecha/working/normalvehicle/ncrtruck/GrantActions(mob/living/user, human_occupant = 0)
+	cycle_action.Grant(user, src)
+	lights_action.Grant(user, src)
+	stats_action.Grant(user, src)
+	eject_action.Grant(user, src)
+	klaxon_action.Grant(user, src)
+
+/obj/mecha/working/normalvehicle/ncrtruck/RemoveActions(mob/living/user, human_occupant = 0)
+	cycle_action.Remove(user)
+	lights_action.Remove(user)
+	stats_action.Remove(user)
+	eject_action.Remove(user)
+	klaxon_action.Remove(user)
+
+/*
 
 // NCR TRUCK
 
@@ -447,10 +485,6 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/ncrtruck
-	var/list/cargo = new
-	var/cargo_capacity = 30
-	var/hides = 0
-	
 
 /obj/structure/mecha_wreckage/ncrtruck
 	name = "\improper Salvageable wreckage"
@@ -487,7 +521,7 @@
 	cargo.Cut()
 	return ..()
 
-/obj/mecha/working/normalvehicle/ncrtruck/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/ncrtruck/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -518,7 +552,9 @@
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/trunk
 	ME.attach(src)
-	
+
+*/
+
 //////////// NCR TRUCK MP //////////////
 
 /obj/mecha/working/normalvehicle/ncrtruck/mp
@@ -531,6 +567,7 @@
 	can_be_locked = TRUE
 	dna_lock
 	step_in = 0.9
+	combined_speed = COMBINED_SPEED_TRUCK
 	opacity = 0
 	dir_in = 8
 	step_energy_drain = 0.5
@@ -541,9 +578,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/ncrtruck
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/ncrtruck/mp/go_out()
 	..()
@@ -560,7 +597,7 @@
 	cargo.Cut()
 	return ..()
 
-/obj/mecha/working/normalvehicle/ncrtruck/mp/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/ncrtruck/mp/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -610,9 +647,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/pickuptruck/go_out()
 	..()
@@ -622,7 +659,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/pickuptruck/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/pickuptruck/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -668,9 +705,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/pickuptruck/blue/go_out()
 	..()
@@ -680,7 +717,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/pickuptruck/blue/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/pickuptruck/blue/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -728,9 +765,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/pickuptruck/bos/go_out()
 	..()
@@ -740,7 +777,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/pickuptruck/bos/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/pickuptruck/bos/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -784,9 +821,9 @@
 	stepsound = 'sound/effects/footstep/gallop2.ogg'
 	turnsound = 'sound/effects/footstep/gallop1.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/truckcaravan/go_out()
 	..()
@@ -796,7 +833,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/truckcaravan/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/truckcaravan/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -840,9 +877,7 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+	combined_speed = COMBINED_SPEED_BUGGY
 
 /obj/mecha/working/normalvehicle/pickuptruck/mechanic/go_out()
 	..()
@@ -852,7 +887,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/pickuptruck/mechanic/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/pickuptruck/mechanic/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -876,7 +911,7 @@
 	ME = new /obj/item/mecha_parts/mecha_equipment/seat
 	ME.attach(src)
 
-	//Ambulance 
+	//Ambulance
 
 /obj/mecha/working/normalvehicle/ambulance
 	name = "\improper Ambulance"
@@ -897,9 +932,9 @@
 	max_equip = 6
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/ambulance/go_out()
 	..()
@@ -910,7 +945,7 @@
 	update_icon()
 
 
-/obj/mecha/working/normalvehicle/ambulance/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/ambulance/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -942,7 +977,7 @@
 	ME = new /obj/item/mecha_parts/mecha_equipment/trunk
 	ME.attach(src)
 
-//Buggy 
+//Buggy
 
 /obj/mecha/working/normalvehicle/buggy
 	name = "\improper Buggy"
@@ -964,9 +999,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/structure/mecha_wreckage/buggy
 	name = "\improper Buggy wreckage"
@@ -981,7 +1016,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/buggy/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/buggy/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1025,9 +1060,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/buggy/dune/go_out()
 	..()
@@ -1037,7 +1072,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/buggy/dune/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/buggy/dune/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1081,9 +1116,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/buggy/red/go_out()
 	..()
@@ -1093,7 +1128,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/buggy/red/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/buggy/red/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1135,9 +1170,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/buggy/blue/go_out()
 	..()
@@ -1147,7 +1182,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/buggy/blue/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/buggy/blue/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1191,9 +1226,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/buggy/flamme/go_out()
 	..()
@@ -1203,7 +1238,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/buggy/flamme/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/buggy/flamme/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1247,9 +1282,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/buggy/ranger/go_out()
 	..()
@@ -1259,7 +1294,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/buggy/ranger/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/buggy/ranger/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1303,9 +1338,9 @@
 	stepsound = 'sound/effects/footstep/gallop2.ogg'
 	turnsound = 'sound/effects/footstep/gallop1.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/buggy/legion/go_out()
 	..()
@@ -1315,7 +1350,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/buggy/legion/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/buggy/legion/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1359,9 +1394,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/jeep/go_out()
 	..()
@@ -1371,7 +1406,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/jeep/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/jeep/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1419,9 +1454,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/jeep/enclave/go_out()
 	..()
@@ -1431,7 +1466,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/jeep/enclave/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/jeep/enclave/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1479,9 +1514,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/jeep/bos/go_out()
 	..()
@@ -1491,7 +1526,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/jeep/bos/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/jeep/bos/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1539,9 +1574,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/highwayman/go_out()
 	..()
@@ -1551,7 +1586,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/highwayman/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/highwayman/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1595,9 +1630,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/corvega/go_out()
 	..()
@@ -1607,7 +1642,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/corvega/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/corvega/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)
@@ -1653,9 +1688,9 @@
 	stepsound = 'sound/f13machines/buggy_loop.ogg'
 	turnsound = 'sound/f13machines/buggy_loop.ogg'
 	wreckage = /obj/structure/mecha_wreckage/buggy
-	
-	
-	
+
+
+
 
 /obj/mecha/working/normalvehicle/corvega/police/go_out()
 	..()
@@ -1665,7 +1700,7 @@
 	..()
 	update_icon()
 
-/obj/mecha/working/normalvehicle/corvega/police/GrantActions(mob/living/user, human_occupant = 0) 
+/obj/mecha/working/normalvehicle/corvega/police/GrantActions(mob/living/user, human_occupant = 0)
 	cycle_action.Grant(user, src)
 	lights_action.Grant(user, src)
 	stats_action.Grant(user, src)

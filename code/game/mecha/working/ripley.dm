@@ -8,9 +8,6 @@
 	armor = ARMOR_VALUE_MEDIUM
 	max_equip = 6
 	wreckage = /obj/structure/mecha_wreckage/ripley
-	var/list/cargo = new
-	var/cargo_capacity = 15
-	var/hides = 0
 
 /obj/mecha/working/ripley/go_out()
 	..()

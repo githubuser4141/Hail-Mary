@@ -1,10 +1,34 @@
-/obj/mecha/fallout_vehicle/proc/drag_slowdown(var/index,var/slowdown_amount = drag)
+/obj/mecha/proc/drag_slowdown(var/index,var/slowdown_amount = drag)
 	if(speed[index] > 0)
 		speed[index] = max(speed[index] - drag,0)
 	else
 		speed[index] = min(speed[index] + drag,0)
 
-/obj/mecha/fallout_vehicle/proc/movement_loop(var/speed_index_target = 1)
+/obj/mecha/Initialize() // Move somewhere else k
+	.=..()
+	if(vehicle_driving_profile)
+		min_speed = vehicle_driving_profile["min_speed"]
+		max_speed = vehicle_driving_profile["max_speed"]
+		drag = vehicle_driving_profile["drag"]
+		acceleration = vehicle_driving_profile["acceleration"]
+		turning_speed_loss = vehicle_driving_profile["turning_speed_loss"]
+		turning_stability = vehicle_driving_profile["turning_stability"]
+		step_energy_drain = vehicle_driving_profile["step_energy_drain"]
+		normal_step_energy_drain = vehicle_driving_profile["normal_step_energy_drain"]
+	if(pixel_shift_profile)
+		pixel_x = pixel_shift_profile["pixel_x"]
+		pixel_y = pixel_shift_profile["pixel_y"]
+	if(equipment_profile)
+		load_equipment_profile(equipment_profile)
+
+/obj/mecha/proc/load_equipment_profile(list/equipment_counts)
+	for(var/equipment_path in equipment_counts)
+		var/count = equipment_counts[equipment_path]
+		for(var/i = 1 to count)
+			var/obj/item/mecha_parts/mecha_equipment/ME = new equipment_path()
+			ME.attach(src)
+
+/obj/mecha/proc/movement_loop(var/speed_index_target = 1)
 	var/noprocstart = 0
 	if(moving_x || moving_y)
 		noprocstart = 1
@@ -15,6 +39,11 @@
 			moving_y = 1
 	if(noprocstart)
 		return
+/*
+	if(vehicle_driving_profile)
+		min_speed = combined_speed["min"]
+		max_speed = combined_speed["max"]
+*/
 	spawn()
 		while (moving_x || moving_y)
 			sleep(max(min_speed - (abs(speed[1]) + abs(speed[2]) ),max_speed))
@@ -42,13 +71,14 @@
 				if(last_moved_axis == index)
 					continue
 				drag_slowdown(index)
-			if(world.time >= acceleration_delay)
+			if(world.time >= acceleration_world_delay)
 				last_moved_axis = 0
 
-/obj/mecha/fallout_vehicle/domove(direction)
-	if(world.time < acceleration_delay)
+/obj/mecha/domove(direction)
+	.=..()
+	if(world.time < acceleration_world_delay)
 		return 0
-	acceleration_delay = world.time + max(max_speed, min_speed - (abs(speed[1]) + abs(speed[2])))
+	acceleration_world_delay = world.time + max(max_speed, min_speed - (abs(speed[1]) + abs(speed[2])))
 
 	if(!occupant)
 		return -1
@@ -58,6 +88,7 @@
 		if(prob(50))
 			dirturn = -45
 		direction = turn(direction,dirturn)
+
 	switch(direction)
 		if(NORTH)
 			last_moved_axis = 2
@@ -87,14 +118,14 @@
 		movement_loop(2)
 	return 1
 
-/obj/mecha/fallout_vehicle/proc/collide_with_obstacle(var/atom/obstacle)
+/obj/mecha/proc/collide_with_obstacle(var/atom/obstacle)
 	if(istype(obstacle,/mob/living))
 		var/mob/living/hit_mob = obstacle
 		playsound(loc,collision_sound,100,0,4)
 		hit_mob.Paralyze(1)
 		hit_mob.take_overall_damage(force)
 	else
-		acceleration_delay = world.time + min_speed
+		acceleration_world_delay = world.time + min_speed
 		if(last_move == EAST || last_move == WEST)
 			moving_x = 0
 			speed[1] = 0
@@ -105,7 +136,7 @@
 	visible_message("<span class = 'notice'>[src] collides wth [obstacle]</span>")
 
 /*
-/obj/mecha/fallout_vehicle/proc/do_flip(var/reason = "")
+/obj/mecha/proc/do_flip(var/reason = "")
 	if(occupant && !enclosed && prob(75))
 		occupant_fall()
 	completely_disabled = 1

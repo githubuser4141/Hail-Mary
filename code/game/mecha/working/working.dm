@@ -4,6 +4,17 @@
 	enter_delay = 20
 	light_power = 9
 	light_range = 10
+	var/list/cargo = new()
+	var/cargo_capacity
+
+#warn make sure cargo works
+
+/obj/mecha/working/Destroy()
+	for(var/atom/movable/A in cargo)
+		A.forceMove(drop_location())
+		step_rand(A)
+	cargo.Cut()
+	return ..()
 
 /obj/mecha/working/Move()
 	. = ..()

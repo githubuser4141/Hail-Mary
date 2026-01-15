@@ -48,8 +48,8 @@
 	if(!chassis || chassis.occupant != owner)
 		return
 	chassis.is_currently_ejecting = TRUE
-	to_chat(owner, span_notice("You begin the ejection procedure. Equipment is disabled during this process. Hold still to finish ejecting."))
-	if(do_after(chassis.occupant,chassis.exit_delay, target = chassis))
+	to_chat(owner, span_notice("You begin the ejection procedure. Equipment is disabled during this process."))
+	if(do_after(chassis.occupant,chassis.exit_delay, target = chassis, allow_movement = TRUE)) // Hail Mary edit: Allows exit from a moving vehicle.
 		to_chat(owner, span_notice("You exit the mech."))
 		chassis.go_out()
 	else
